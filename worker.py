@@ -30,7 +30,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from threading import Thread
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from logging import getLogger
 
 def local_thread(fu):
@@ -114,7 +114,7 @@ class Worker(Thread):
             try:
                 res = fu(*args, **kwargs)
                 ex = None
-            except Exception, e:
+            except Exception as e:
                 self.log().exception(e)
                 res = None
                 ex = e

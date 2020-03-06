@@ -44,7 +44,7 @@ class MumoModule(Worker):
         Worker.__init__(self, name, manager.getQueue())
         self.__manager = manager
         
-        if isinstance(configuration, basestring):
+        if isinstance(configuration, str):
             # If we are passed a string expect a config file there
             if configuration:
                 self.__cfg = Config(configuration, self.default_config)
@@ -95,7 +95,7 @@ def logModFu(fu):
     def new_fu(self, *args, **kwargs):
         log = self.log()
         argss = '' if len(args)==0 else ',' + ','.join(['"%s"' % str(arg) for arg in args])
-        kwargss = '' if len(kwargs)==0 else ','.join('%s="%s"' % (kw, str(arg)) for kw, arg in kwargs.iteritems())
+        kwargss = '' if len(kwargs)==0 else ','.join('%s="%s"' % (kw, str(arg)) for kw, arg in kwargs.items())
         log.debug("%s(%s%s%s)", fu.__name__, str(self), argss, kwargss)
         return fu(self, *args, **kwargs)
     return new_fu

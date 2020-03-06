@@ -29,7 +29,7 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Queue
+import queue
 from worker import Worker, local_thread, local_thread_blocking
 from config import Config
 import sys
@@ -285,7 +285,7 @@ class MumoManager(Worker):
         for server in servers:
             try:
                 mdict[server][queue].remove(handler)
-            except KeyError, ValueError:
+            except KeyError as ValueError:
                 pass
 
     def __announce_to_dict(self, mdict, server, function, *args, **kwargs):
@@ -302,13 +302,13 @@ class MumoManager(Worker):
 
         # Announce to all handlers of the given serverlist
         if server == self.MAGIC_ALL:
-            servers = mdict.iterkeys()
+            servers = iter(mdict.keys())
         else:
             servers = [self.MAGIC_ALL, server]
 
         for server in servers:
             try:
-                for queue, handlers in mdict[server].iteritems():
+                for queue, handlers in mdict[server].items():
                     for handler in handlers:
                         self.__call_remote(queue, handler, function, *args, **kwargs)
             except KeyError:
@@ -319,10 +319,10 @@ class MumoManager(Worker):
         try:
             func = getattr(handler, function) # Find out what to call on target
             queue.put((None, func, args, kwargs))
-        except AttributeError, e:
+        except AttributeError as e:
             mod = self.queues.get(queue, None)
             myname = ""
-            for name, mymod in self.modules.iteritems():
+            for name, mymod in self.modules.items():
                 if mod == mymod:
                     myname = name
             if myname:
@@ -341,7 +341,7 @@ class MumoManager(Worker):
         Call connected handler on all handlers
         """
         self.meta = meta
-        for queue, module in self.queues.iteritems():
+        for queue, module in self.queues.items():
             self.__call_remote(queue, module, "connected")
 
     @local_thread
@@ -349,7 +349,7 @@ class MumoManager(Worker):
         """
         Call disconnected handler on all handlers
         """
-        for queue, module in self.queues.iteritems():
+        for queue, module in self.queues.items():
             self.__call_remote(queue, module, "disconnected")
 
     @local_thread
@@ -487,12 +487,12 @@ class MumoManager(Worker):
             log.error("Module '%s' already loaded", name)
             return
 
-        modqueue = Queue.Queue()
+        modqueue = queue.Queue()
         modmanager = MumoManagerRemote(self, name, modqueue)
 
         try:
             modinst = modcls(name, modmanager, module_cfg)
-        except Exception, e:
+        except Exception as e:
             msg = "Module '%s' failed to initialize" % name
             log.error(msg)
             log.exception(e)
@@ -543,7 +543,7 @@ class MumoManager(Worker):
         try:
             mod = __import__(name)
             self.imports[name] = mod
-        except ImportError, e:
+        except ImportError as e:
             msg = "Failed to import module '%s', reason: %s" % (name, str(e))
             log.error(msg)
             raise FailedLoadModuleImportException(msg)
@@ -575,7 +575,7 @@ class MumoManager(Worker):
 
         if not names:
             # If no names are given start all models
-            names = self.modules.iterkeys()
+            names = iter(self.modules.keys())
 
         for name in names:
             try:
@@ -608,7 +608,7 @@ class MumoManager(Worker):
 
         if not names:
             # If no names are given start all models
-            names = self.modules.iterkeys()
+            names = iter(self.modules.keys())
 
         for name in names:
             try:
@@ -620,20 +620,20 @@ class MumoManager(Worker):
 
         if force:
             # We will have to drain the modules queues
-            for queue, module in self.queues.iteritems():
+            for queue, module in self.queues.items():
                 if module in self.modules:
                     try:
                         while queue.get_nowait(): pass
-                    except Queue.Empty: pass
+                    except queue.Empty: pass
 
-        for modinst in stoppedmodules.itervalues():
+        for modinst in stoppedmodules.values():
             if modinst.isAlive():
                 modinst.stop()
                 log.debug("Module '%s' is being stopped", name)
             else:
                 log.debug("Module '%s' already stopped", name)
 
-        for modinst in stoppedmodules.itervalues():
+        for modinst in stoppedmodules.values():
             modinst.join(timeout = self.cfg.modules.timeout)
 
         return stoppedmodules

@@ -30,7 +30,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-import Queue
+import queue
 from mumo_manager import MumoManager, MumoManagerRemote
 from mumo_module import MumoModule
 from logging import basicConfig, ERROR, getLogger
@@ -124,7 +124,7 @@ class MumoManagerTest(unittest.TestCase):
         man ,mod = self.up()
         
         tos = ["MyModule"]
-        self.assertEquals(list(man.stopModules(tos).iterkeys()), tos)
+        self.assertEqual(list(man.stopModules(tos).keys()), tos)
         mod.estopped.wait(timeout=1)
         assert(mod.estopped.is_set())
         

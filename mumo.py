@@ -99,7 +99,7 @@ def dynload_slice(prx):
         # In case it breaks with future versions use slice2py and search for
         # "IcePy.Operation('getSlice'," for updates in the generated bindings.
         op = None
-        if IcePy.intVersion() < 30500L:
+        if IcePy.intVersion() < 30500:
             # Old 3.4 signature with 9 parameters
             op = IcePy.Operation('getSlice', Ice.OperationMode.Idempotent, Ice.OperationMode.Idempotent, True, (), (), (), IcePy._t_string, ())
 
@@ -115,7 +115,7 @@ def dynload_slice(prx):
         load_slice(dynslicefilepath)
         dynslicefile.close()
         os.remove(dynslicefilepath)
-    except Exception, e:
+    except Exception as e:
         error("Retrieving slice from server failed")
         exception(e)
         raise
@@ -230,7 +230,7 @@ def do_main_program():
                         servercb = Murmur.ServerCallbackPrx.uncheckedCast(servercbprx)
                         server.addCallback(servercb)
 
-            except (Murmur.InvalidSecretException, Ice.UnknownUserException, Ice.ConnectionRefusedException), e:
+            except (Murmur.InvalidSecretException, Ice.UnknownUserException, Ice.ConnectionRefusedException) as e:
                 if isinstance(e, Ice.ConnectionRefusedException):
                     error('Server refused connection')
                 elif isinstance(e, Murmur.InvalidSecretException) or \
@@ -266,7 +266,7 @@ def do_main_program():
                         self.attachCallbacks()
 
                 self.metaUptime = uptime
-            except Ice.Exception, e:
+            except Ice.Exception as e:
                 error('Connection to server lost, will try to reestablish callbacks in next watchdog run (%ds)', cfg.ice.watchdog)
                 debug(str(e))
                 self.attachCallbacks()
@@ -310,7 +310,7 @@ def do_main_program():
             def newfunc(*args, **kws):
                 try:
                     return func(*args, **kws)
-                except Exception, e:
+                except Exception as e:
                     catch = True
                     for ex in exceptions:
                         if isinstance(e, ex):
@@ -347,7 +347,7 @@ def do_main_program():
                     server.addCallback(servercb)
 
                 # Apparently this server was restarted without us noticing
-                except (Murmur.InvalidSecretException, Ice.UnknownUserException), e:
+                except (Murmur.InvalidSecretException, Ice.UnknownUserException) as e:
                     if hasattr(e, "unknown") and e.unknown != "Murmur::InvalidSecretException":
                         # Special handling for Murmur 1.2.2 servers with invalid slice files
                         raise e
@@ -501,18 +501,18 @@ if __name__ == '__main__':
     # Load configuration
     try:
         cfg = Config(option.ini, default)
-    except Exception, e:
-        print >> sys.stderr, 'Fatal error, could not load config file from "%s"' % cfgfile
-        print >> sys.stderr, e
+    except Exception as e:
+        print('Fatal error, could not load config file from "%s"' % cfgfile, file=sys.stderr)
+        print(e, file=sys.stderr)
         sys.exit(1)
 
     # Initialise logger
     if cfg.log.file:
         try:
             logfile = open(cfg.log.file, 'a')
-        except IOError, e:
+        except IOError as e:
             #print>>sys.stderr, str(e)
-            print >> sys.stderr, 'Fatal error, could not open logfile "%s"' % cfg.log.file
+            print('Fatal error, could not open logfile "%s"' % cfg.log.file, file=sys.stderr)
             sys.exit(1)
     else:
         logfile = logging.sys.stderr
@@ -539,8 +539,8 @@ if __name__ == '__main__':
             from daemon.pidlockfile import TimeoutPIDLockFile
     except ImportError:
         if option.force_daemon:
-            print >> sys.stderr, 'Fatal error, could not daemonize process due to missing "daemon" library, ' \
-            'please install the missing dependency and restart the application'
+            print('Fatal error, could not daemonize process due to missing "daemon" library, ' \
+            'please install the missing dependency and restart the application', file=sys.stderr)
             sys.exit(1)
         ret = do_main_program()
     else:
@@ -548,10 +548,10 @@ if __name__ == '__main__':
         if pidfile.is_locked():
             try:
                 os.kill(pidfile.read_pid(), 0)
-                print >> sys.stderr, 'Mumo already running as %s' % pidfile.read_pid()
+                print('Mumo already running as %s' % pidfile.read_pid(), file=sys.stderr)
                 sys.exit(1)
             except OSError:
-                print >> sys.stderr, 'Found stale mumo pid file but no process, breaking lock'
+                print('Found stale mumo pid file but no process, breaking lock', file=sys.stderr)
                 pidfile.break_lock()
 
         context = daemon.DaemonContext(working_directory=sys.path[0],

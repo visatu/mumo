@@ -33,7 +33,7 @@ import unittest
 
 import worker
 from worker import Worker, local_thread, local_thread_blocking
-from Queue import Queue
+from queue import Queue
 from logging.handlers import BufferingHandler
 from logging import ERROR
 import logging
